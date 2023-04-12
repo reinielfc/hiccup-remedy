@@ -1,0 +1,24 @@
+# Ignore Python bytecode files and caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore Pipenv virtual environment files
+/.venv/
+/.venv3/
+/Pipfile.lock
+
+# Ignore PyInstaller build files
+/build/
+/dist/
+/*.spec
+
+# Ignore PyCharm project files
+/.idea/
+*.iml
+
+# Ignore PyCharm configuration files
+/.idea/*.xml
+/.idea/*.iml
+/.idea/*.ipr
