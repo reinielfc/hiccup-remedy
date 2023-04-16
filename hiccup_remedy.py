@@ -2,7 +2,7 @@ import os
 from argparse import Namespace, ArgumentParser
 from pathlib import Path
 
-from hiccup.filegroup import DuplicateFinder
+from hiccup.duplicatefinder import DuplicateFinder
 
 
 def main():
