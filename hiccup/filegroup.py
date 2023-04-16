@@ -9,6 +9,8 @@ from util import human_readable
 
 
 class FileGroup:
+    _HEADER_PATTERN: re.Pattern
+
     def __init__(self, **attr):
         self._id = uuid4()
         self._attr = attr
@@ -18,13 +20,13 @@ class FileGroup:
     def move(self, dest: Path):
         pass
 
-    @staticmethod
-    def from_header(header: bytes, open_file: io.BufferedIOBase) -> 'FileGroup':
-        pass
+    @classmethod
+    def from_header(cls, header: str) -> 'FileGroup':
+        return cls()
 
-    @staticmethod
-    def is_header(line: str | bytes) -> bool:
-        pass
+    @classmethod
+    def is_header(cls, string: str) -> bool:
+        return cls._HEADER_PATTERN.search(string) is not None
 
 
 class DuplicateFileGroup(FileGroup):
