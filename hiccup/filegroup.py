@@ -1,40 +1,44 @@
-import os.path
+import inspect
+import io
+import os
+import re
 from pathlib import Path
-from uuid import uuid4
+from uuid import uuid4, UUID
 
 from util import human_readable
 
 
-class DupeGroup:
-    def __init__(self, size: int, paths: list[Path], sep: str = "."):
-        self.key = uuid4()
-        self.size = size
-        self.sep = sep
-        self.is_moved = False
-        self.common = os.path.commonpath(paths)
-        self.records: list[tuple[Path, Path]] = [self._make_record(p) for p in paths]
+class FileGroup:
+    def __init__(self, record_list: list[str], **attr: dict):
+        self._key: UUID = uuid4()
+        self._attr: dict = attr
+        self._records: list = [self._make_record(r) for r in record_list]
+        self._common = Path(os.path.commonpath(
+            [r['orig']['path'] for r in self._records]))
+        self._set_record_names()
+
+    def _make_record(self, record_str: str) -> dict:
+        pass
+
+    def _set_record_names(self):
+        for r in self._records:
+            r['name'] = str(r['orig']['path'].relative_to(self._common)).replace('/', '.')
 
     def move(self, dest: Path):
-        for origin, destination in self.records:
-            dest.joinpath(destination.parent)
-            destination.parent.mkdir()
-            # origin.rename(destination)
+        key_path = Path(str(self._key))
+        dest_dir = dest.joinpath(key_path)
+        dest_dir.mkdir(exist_ok=True)
 
-    def _make_record(self, origin: Path) -> tuple[Path, Path]:
-        key = Path(str(self.key))
-        destination = key.joinpath(
-            str(origin.relative_to(self.common)).replace("/", self.sep)
-        )
+        for r in self._records:
+            orig: Path = r['orig']['path']
+            dest: Path = dest_dir.joinpath(r['name'])
 
-        return origin, destination
+            orig.rename(dest)
 
-    def __str__(self):
-        lines = [
-            f"---- {self.key} - Size {human_readable(self.size)} ({self.size}) - {len(self.records)} files"
-        ]
+    @staticmethod
+    def from_header(header: bytes, open_file: io.BufferedIOBase) -> 'FileGroup':
+        pass
 
-        for record in self.records:
-            origin, destination = record
-            lines.append(str(origin))
-
-        return "\n".join(lines) + "\n"
+    @staticmethod
+    def str_is_header(line: str | bytes) -> bool:
+        pass
