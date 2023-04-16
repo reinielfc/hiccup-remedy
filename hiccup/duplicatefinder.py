@@ -1,4 +1,3 @@
-import itertools
 import os
 from pathlib import Path
 from tempfile import TemporaryFile, NamedTemporaryFile
@@ -9,8 +8,7 @@ from hiccup.filegroup import FileGroup, DuplicateFileGroup
 
 
 class DuplicateFinder:
-    TYPE = {
-        'dup': {'group_type': DuplicateFileGroup, 'cmd_defaults': dict(dryrun=True, m=1)}}
+    TYPE = {'dup': {'group_type': DuplicateFileGroup, 'cmd_defaults': dict(dryrun=True, m=1)}}
 
     def __init__(self, finder_type: str):
         self._cmd = sh.Command('czkawka-cli').bake(finder_type)
