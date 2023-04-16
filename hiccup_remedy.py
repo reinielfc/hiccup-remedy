@@ -2,12 +2,12 @@ import os
 from argparse import Namespace, ArgumentParser
 from pathlib import Path
 
-from hiccup.duplicatefinder import DuplicateFinder
+from hiccup.finder import Finder
 
 
 def main():
     args = get_args()
-    finder = DuplicateFinder(args.mode)
+    finder = Finder(args.mode)
     finder.dirs = args.dirs
 
     print(args)
@@ -19,7 +19,7 @@ def get_args() -> Namespace:
     parser = ArgumentParser()
 
     parser.add_argument(
-        '-m', '--mode', type=str, choices=DuplicateFinder.TYPE.keys(), default='dup',
+        '-m', '--mode', type=str, choices=Finder.TYPE.keys(), default='dup',
         help='mode of operation')
 
     parser.add_argument(

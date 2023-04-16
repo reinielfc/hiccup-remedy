@@ -7,12 +7,12 @@ import sh
 from hiccup.filegroup import FileGroup, DuplicateFileGroup
 
 
-class DuplicateFinder:
+class Finder:
     TYPE = {'dup': {'group_type': DuplicateFileGroup, 'cmd_defaults': dict(dryrun=True, m=1)}}
 
     def __init__(self, finder_type: str):
         self._cmd = sh.Command('czkawka-cli').bake(finder_type)
-        self._type = DuplicateFinder.TYPE[finder_type]
+        self._type = Finder.TYPE[finder_type]
         self._dirs: list[Path] = []
 
     def _find_groups(self, tmp: TemporaryFile):
