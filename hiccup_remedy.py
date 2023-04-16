@@ -1,25 +1,26 @@
 import os
-import re
 from argparse import Namespace, ArgumentParser
 from pathlib import Path
-from tempfile import NamedTemporaryFile
 
-from sh import Command
-
-from dupe_group import DupeGroup
+from hiccup.filegroup import DuplicateFinder
 
 
 def main():
     args = get_args()
+    finder = DuplicateFinder(args.mode)
+    finder.dirs = args.dirs
 
     print(args)
-    dupes = find_dupes(args.dirs, args.dest, dict())
 
-    [print(d) for d in dupes]
+    finder.find(move=(not args.dry_run), dest=args.dest)
 
 
 def get_args() -> Namespace:
     parser = ArgumentParser()
+
+    parser.add_argument(
+        '-m', '--mode', type=str, choices=DuplicateFinder.TYPE.keys(), default='dup',
+        help='mode of operation')
 
     parser.add_argument(
         '-d', '--dest', type=Path, default=Path(os.getcwd()),
@@ -34,35 +35,6 @@ def get_args() -> Namespace:
         help='directory paths to find duplicates at')
 
     return parser.parse_args()
-
-
-def find_dupes(dirs: list[Path], dest: Path, config: dict):
-    czkawka = Command('czkawka-cli')
-
-    with NamedTemporaryFile() as tmp:
-        config.update(  # set default config
-            dryrun=True,
-            file_to_save=Path(tmp.name).resolve())
-
-        czkawka(  # run command
-            'dup', **config,
-            d=[d.resolve() for d in dirs],
-            _out=os.devnull, _err=os.devnull)
-
-        headers = filter(lambda line: line.startswith(b'---- Size'), tmp)
-        groups = map(lambda header: parse_group(tmp, header), headers)
-
-        return list(groups)
-
-
-def parse_group(tmp_file, line: bytes) -> DupeGroup:
-    match = re.search(br'Size [\d.]+ [KMGT]iB \((\d+)\) - (\d+) files?', line)
-    size, num_files = map(int, match.groups())
-    records = [
-        Path(tmp_file.readline().decode('ascii').rstrip('\n'))
-        for i in range(num_files)]
-
-    return DupeGroup(size, records)
 
 
 if __name__ == '__main__':
