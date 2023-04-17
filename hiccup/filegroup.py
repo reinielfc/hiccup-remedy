@@ -3,6 +3,8 @@ import shutil
 from pathlib import Path
 from uuid import uuid4
 
+from prettytable import PrettyTable
+
 
 class FileGroup:
     _HEADER_PATTERN: re.Pattern
@@ -81,3 +83,43 @@ class DuplicateFileGroup(FileGroup):
 
         return '\n'.join(lines) + '\n'
 
+
+class SimilarImageGroup(FileGroup):
+    _FILE_PATTERN = re.compile(r'^(/.*) - (\d+x\d+) - ([\d.]+ [KMGT]iB) - (.*)$')
+    _HEADER_PATTERN = re.compile(r'^Found \d+ images which have similar friends$')
+
+    def add(self, file_str: str):
+        match = self._FILE_PATTERN.search(file_str)
+        file_path, dimensions, size_h, similarity = match.groups()
+        path = Path(file_path)
+        attr = dict(dimensions=dimensions, size_h=size_h, similarity=similarity)
+
+        self._files.append(dict(path=path, attr=attr))
+
+    @staticmethod
+    def _attr_str(a: dict) -> str:
+        return '.'.join([a['similarity'], a['dimensions']]) + '_'
+
+    @staticmethod
+    def _make_table():
+        table = PrettyTable(header=False, border=False, preserve_internal_border=True, align='l', padding_width=1)
+        table.add_column('similarity', [], 'l')
+        table.add_column('dimensions', [], 'r')
+        table.add_column('size_h', [], 'r')
+        table.add_column('path', [], 'l')
+
+        return table
+
+    def __str__(self):
+        files = self._files
+        header = f'---- FileGroup ({len(files)}) {self._id} -> SimilarImage\n'
+
+        def make_row(file_dict: dict):
+            path = file_dict['path']
+            dimensions, size_h, similarity = file_dict['attr'].values()
+            return similarity, dimensions, size_h, path
+
+        table = self._make_table()
+        table.add_rows(map(make_row, files))
+
+        return header + str(table)
