@@ -10,6 +10,7 @@ from util import human_readable
 
 class FileGroup:
     _HEADER_PATTERN: re.Pattern
+    _FILE_PATTERN: re.Pattern
 
     def __init__(self, **attr):
         self._id = uuid4()
@@ -27,6 +28,10 @@ class FileGroup:
     @classmethod
     def is_header(cls, string: str) -> bool:
         return cls._HEADER_PATTERN.search(string) is not None
+
+    @classmethod
+    def is_file(cls, string: str) -> bool:
+        return cls._FILE_PATTERN.search(string) is not None
 
 
 class DuplicateFileGroup(FileGroup):
