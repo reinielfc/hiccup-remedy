@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 sh = "*"
+prettytable = "*"
 
 [dev-packages]
 black = "*"
