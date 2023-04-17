@@ -1,5 +1,5 @@
 import os
-from argparse import Namespace, ArgumentParser
+from argparse import ArgumentParser
 from pathlib import Path
 
 from hiccup.finder import Finder
@@ -8,18 +8,19 @@ from hiccup.finder import Finder
 def main():
     args = get_args()
     finder = Finder(args.mode)
-    finder.dirs = args.dirs
 
-    print(args)
+    if args.dry_run:
+        finder.find(*args.dirs)
+        print("--- DRY RUN ---")
+    else:
+        finder.move(*args.dirs, dest=args.dest)
 
-    finder.find(move=(not args.dry_run), dest=args.dest)
 
-
-def get_args() -> Namespace:
-    parser = ArgumentParser()
+def get_args():
+    parser = ArgumentParser(prog='hiccup_remedy.py')
 
     parser.add_argument(
-        '-m', '--mode', type=str, choices=Finder.TYPE.keys(), default='dup',
+        '-m', '--mode', type=str, choices=Finder.MODES.keys(), default='dup',
         help='mode of operation')
 
     parser.add_argument(
