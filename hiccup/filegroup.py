@@ -57,4 +57,27 @@ class FileGroup:
 
 
 class DuplicateFileGroup(FileGroup):
-    pass
+    _HEADER_PATTERN = re.compile(r'^---- Size ([\d.]+ [KMGT]iB) \((\d+)\) - \d+ files?$')
+    _FILE_PATTERN = re.compile(r'^/.*$')
+
+    def add(self, file_str: str):
+        match = self._FILE_PATTERN.match(file_str)
+        path = Path(match.group())
+        self._files.append(dict(path=path, attr={}))
+
+    @classmethod
+    def from_header(cls, header: str) -> FileGroup:
+        match = cls._HEADER_PATTERN.search(header)
+        size_h, size_b = match.groups()
+
+        return cls(size_h=size_h, size_b=size_b)
+
+    def __str__(self):
+        size_h, size_b = self._attr.values()
+        files = self._files
+
+        lines = [f'---- FileGroup ({len(files)}) {self._id} -> Duplicate @ {size_h} ({size_b})']
+        lines += map(lambda f: str(f['path']), files)
+
+        return '\n'.join(lines) + '\n'
+
